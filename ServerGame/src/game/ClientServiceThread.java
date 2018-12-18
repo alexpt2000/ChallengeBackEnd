@@ -19,6 +19,7 @@ class ClientServiceThread extends Thread {
 	int clientID = -1;
 	boolean exit;
 	int playControl = 0;
+	GameState gameState = new GameState();
 	
 	String playerName[] = new String[2];
 	
@@ -26,7 +27,7 @@ class ClientServiceThread extends Thread {
 	ObjectInputStream in;
 
 	// Instance of Bean Classes
-	GameState gameState = new GameState();
+//	GameState gameState = new GameState();
 
 
 	ClientServiceThread(Socket s, int i) {
@@ -73,13 +74,20 @@ class ClientServiceThread extends Thread {
 						sendMessage("\nPlease, enter your name.: ");
 						message = (String) in.readObject();
 //						sendMessage(gameState.PrintGrid() + "\nIt's your turn " + message + " please enter column (1-99): ");
-						playerName[clientID] = message;
+						playerName[0] = message;
 						playerTurn = false;
 					} else {
-							sendMessage(gameState.PrintGrid() + "\nIt's your turn " + playerName[playControl] + " please enter column (1-9): ");
+						
+						if (gameState.checkResult("[X] ")) {
+							sendMessage(gameState.PrintGrid() + "\n XXXXXXXX: ");
+						} else if (gameState.checkResult("[O] ")){
+							sendMessage(gameState.PrintGrid() + "\n OOOOOOOO: ");
+						} else {
+							sendMessage(gameState.PrintGrid() + "\nIt's your turn " + playerName[0] + " please enter column (1-9): ");
 							message = (String) in.readObject();
 							gameState.savePlayerChoice(message, playControl);
 							playControl = playControl == 0 ? 1:0;
+						}
 					}
 					
 				} catch (ClassNotFoundException classnot) {

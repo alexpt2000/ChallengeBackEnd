@@ -14,6 +14,7 @@ public class Requester {
 	String ipaddress;
 	Scanner clientInput;
 
+
 	Requester() {
 	}
 
