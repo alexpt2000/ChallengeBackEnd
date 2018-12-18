@@ -18,7 +18,10 @@ class ClientServiceThread extends Thread {
 	String message;
 	int clientID = -1;
 	boolean exit;
-
+	int playControl = 0;
+	
+	String playerName[] = new String[2];
+	
 	ObjectOutputStream out;
 	ObjectInputStream in;
 
@@ -44,8 +47,10 @@ class ClientServiceThread extends Thread {
 
 	public void run() {
 		System.out.println("Accepted Client : ID - " + clientID + " : Address - " + clientSocket.getInetAddress().getHostName());
-		try {
 
+		gameState.PopulateArray();
+		
+		try {
 			out = new ObjectOutputStream(clientSocket.getOutputStream());
 			out.flush();
 			in = new ObjectInputStream(clientSocket.getInputStream());
@@ -54,6 +59,7 @@ class ClientServiceThread extends Thread {
 			sendMessage("Connection successful\n----------------------\n \nWelcome to the 5-in-a-Row");
 
 			boolean finish = false;
+			boolean playerTurn = true;
 
 			do {
 				try {
@@ -62,13 +68,20 @@ class ClientServiceThread extends Thread {
 						sendMessage("\nJust two players can conect at same time. Sorry.");
 						break;
 					}
-
-					sendMessage("\nPlease, enter your name.: ");
-					message = (String) in.readObject();
 					
-					sendMessage("\nHello " + message);
+					if(playerTurn){
+						sendMessage("\nPlease, enter your name.: ");
+						message = (String) in.readObject();
+//						sendMessage(gameState.PrintGrid() + "\nIt's your turn " + message + " please enter column (1-99): ");
+						playerName[clientID] = message;
+						playerTurn = false;
+					} else {
+							sendMessage(gameState.PrintGrid() + "\nIt's your turn " + playerName[playControl] + " please enter column (1-9): ");
+							message = (String) in.readObject();
+							gameState.savePlayerChoice(message, playControl);
+							playControl = playControl == 0 ? 1:0;
+					}
 					
-
 				} catch (ClassNotFoundException classnot) {
 					System.err.println("Data received in unknown format");
 				}
