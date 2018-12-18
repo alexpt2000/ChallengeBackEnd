@@ -1,38 +1,35 @@
-/**
-* 
-*
-* @author  Alexander Souza 
-*/
-
 package game;
 
+import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
 
 public class Server {
+	private int PORT;
 
-	/**
-	 * This is the method main, this will create new socket and a thread for this
-	 * socket.
-	 */
+	public Server(int port) {
+		this.PORT = port;
+	}
 
-	public static void main(String[] args) throws Exception {
-
-		// Creating a new socket
-		ServerSocket m_ServerSocket = new ServerSocket(2004, 10);
-
-		// This will give one ID for each socket created
-		int id = 0;
-
-		// Stay in loop waiting for conections (client)
+	public void runServer() throws IOException {
+		ServerSocket serverSocket = new ServerSocket(PORT);
+		System.out.println("Server up....");
 		while (true) {
-			Socket clientSocket = m_ServerSocket.accept();
+			GameState gameState = new GameState();
+			gameState.PopulateArray();
 
-			// Creating a thread and give a socket and ID
-			ClientServiceThread cliThread = new ClientServiceThread(clientSocket, id++);
+			Player first = new Player(serverSocket.accept(), gameState, "X", gameState.getGameId());
+			gameState.setPlayer1(first);
 
-			// Start the thread
-			cliThread.start();
+			Player second = new Player(serverSocket.accept(), gameState, "O", gameState.getGameId());
+			gameState.setPlayer2(second);
+
+			first.setOpponent(second);
+			second.setOpponent(first);
+
+			first.start();
+			second.start();
+			gameState.startGame();
+
 		}
 	}
 }
